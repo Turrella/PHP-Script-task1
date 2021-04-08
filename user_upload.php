@@ -10,6 +10,7 @@ if ($argc < 2) {
     processInvalidCommand();
 }
 
+
 switch ($argv[1]){
     case '-u':
         fwrite(STDOUT, $GLOBALS['databaseUsername'] . "\n");
@@ -24,6 +25,17 @@ switch ($argv[1]){
         break;
 
     case '--create_table':
+        $database = new CatalystDatabase();
+        $connection = $database->connect();
+
+        if ($connection->connect_error) {
+            die("MySQL Connection failed: " . $connection->connect_error . "\n");
+        }
+        if ($database->checkTableExists($connection, $GLOBALS['databaseTable'])){
+            fwrite(STDERR, $GLOBALS['databaseTable'] . " table has already existed\n");
+        } else {
+            $database->createTable($connection, $GLOBALS['databaseTable']);
+        }
         break;
 
     case '--help':
@@ -39,29 +51,12 @@ switch ($argv[1]){
 }
 
 
-$test = new CatalystDatabase();
-try
-{
-    $connect = $test->connect();
-
-    if ($connect->connect_error) {
-
-    }
-    if ($test->checkTableExisted($connect,$GLOBALS['users'])){
-        fwrite(STDOUT, 'existed');
-    } else {
-        fwrite(STDOUT, 'not existed');
-    }
-} catch (Exception $ex){
-    return '=========================test============================';
-}
-
-
 function processInvalidCommand()
 {
     fwrite(STDERR, "Invalid operation, please try --help for help \n");
     exit;
 }
+
 
 function commandDescription(): array
 {
@@ -80,25 +75,42 @@ function commandDescription(): array
 class CatalystDatabase
 {
 
-    protected $username, $password, $host, $table;
+    protected $username, $password, $host, $database, $table;
 
     public function __construct()
     {
         $this->username = $GLOBALS['databaseUsername'];
         $this->password = $GLOBALS['databasePassword'];
         $this->host = $GLOBALS['databaseHost'];
+        $this->database = $GLOBALS['database'];
         $this->table = $GLOBALS['databaseTable'];
     }
 
 
     public function connect(): mysqli
     {
-        return new mysqli($this->host, $this->username, $this->password);
+        return new mysqli($this->host, $this->username, $this->password, $this->database);
     }
 
 
-    public function checkTableExisted(mysqli $connection, string $table): bool
+    public function checkDatabaseExisted(mysqli $connection, string $database): bool
     {
-        return $connection->select_db($table);
+        return $connection->select_db($database);
+    }
+
+
+    public function checkTableExists(mysqli $connection, string $table):bool
+    {
+        return $connection->query("SHOW TABLES LIKE '$table'")->num_rows > 0;
+    }
+
+    public function createTable(mysqli $connection, string $table)
+    {
+        $sql = "CREATE TABLE $table (id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,name VARCHAR(30) NOT NULL,surname VARCHAR(30) NOT NULL,email VARCHAR(50) NOT NULL)";
+        if ($connection->query($sql)) {
+            fwrite(STDOUT, "table " . $table . " has been created successfully\n");
+        } else {
+            fwrite (STDOUT, "table creation error: " . $connection->error . "\n");
+        }
     }
 }
