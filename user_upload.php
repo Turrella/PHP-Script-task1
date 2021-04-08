@@ -6,7 +6,26 @@ require 'Config/databaseConfig.php';        # import database configuration
 /**
  * process command
  */
+if ($argc < 2) {
+    processInvalidCommand();
+}
+
 switch ($argv[1]){
+    case '-u':
+        fwrite(STDOUT, $GLOBALS['databaseUsername'] . "\n");
+        break;
+
+    case '-p':
+        fwrite(STDOUT, $GLOBALS['databasePassword'] . "\n");
+        break;
+
+    case '-h':
+        fwrite(STDOUT, $GLOBALS['databaseHost'] . "\n");
+        break;
+
+    case '--create_table':
+        break;
+
     case '--help':
         $helpContent = commandDescription();
         foreach ($helpContent as $row)
@@ -14,11 +33,9 @@ switch ($argv[1]){
             fwrite(STDOUT, $row);
         }
         break;
-    case '--create_table':
-        break;
 
     default:
-        fwrite(STDOUT, 'command not allowed');
+        fwrite(STDERR, "Invalid operation, please try --help for help \n");
 }
 
 
@@ -40,7 +57,11 @@ try
 }
 
 
-
+function processInvalidCommand()
+{
+    fwrite(STDERR, "Invalid operation, please try --help for help \n");
+    exit;
+}
 
 function commandDescription(): array
 {
