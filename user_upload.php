@@ -160,9 +160,9 @@ class CatalystDatabase
 
     public function insertRow(mysqli $connection, string $table, string $name, string $surname, string $email)
     {
-        $sql = "INSERT INTO $table (name, surname, email) VALUES ('$name', '$surname', '$email')";
+        $sql = "INSERT INTO $table (name, surname, email) VALUES (\"" . $name . "\", \"" . $surname. "\", \"" . $email . "\")";
         if (!$result = $connection->query($sql)) {
-            fwrite(STDERR, "data insert failed! Error: $connection->error ... name: $name, surname: $surname, email: $email \n");
+            fwrite(STDERR, "data insert failed! Error: $connection->error ...  EMAIL: $email \n");
         }
     }
 }
