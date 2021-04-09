@@ -77,7 +77,7 @@ if ($argc == 2) {
             exit("MySQL Connection failed: " . $connection->connect_error . "\n");
         }
         if (!$database->checkTableExists($connection, $GLOBALS['databaseTable'])) {
-            exit("please create users table first!");
+            exit("please create users table first!\n");
         }
     }
 
